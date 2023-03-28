@@ -1,0 +1,9 @@
+{
+	"name": "mahmoudDataflowFactory",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "ca145eec-3e92-40a1-ab28-4a61629eb2c8",
+		"tenantId": "9130c31f-0eae-4715-a21f-d447594745e9"
+	}
+}
