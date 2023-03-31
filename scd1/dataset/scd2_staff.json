@@ -9,11 +9,6 @@
 		"type": "AzureSqlTable",
 		"schema": [
 			{
-				"name": "staff_id",
-				"type": "int",
-				"precision": 10
-			},
-			{
 				"name": "first_name",
 				"type": "varchar"
 			},
@@ -41,6 +36,11 @@
 			},
 			{
 				"name": "staff_sid",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "staff_id",
 				"type": "int",
 				"precision": 10
 			}
