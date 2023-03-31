@@ -23,38 +23,6 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "scd1Flow",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "dataflow1",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"customer": {},
-									"customerDim": {},
-									"sink1": {},
-									"sink2": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
 						"name": "scd2Flow",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
@@ -97,7 +65,6 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/dataflow1')]",
 				"[concat(variables('factoryId'), '/dataflows/dataflow2')]"
 			]
 		},
@@ -621,7 +588,7 @@
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     query: 'select max(staf_sid) as maxKey\\nfrom [dbo].[scd2_staffs]',",
+						"     query: 'select (case\\nwhen max(staff_sid) is null then 1\\nelse  max(staff_sid)\\nend)as maxKey\\nfrom [dbo].[scd2_staff]',",
 						"     format: 'query') ~> MaxKey",
 						"staffDim select(mapColumn(",
 						"          staff_id,",
@@ -644,7 +611,7 @@
 						"     multiple: false,",
 						"     pickup: 'any',",
 						"     broadcast: 'auto')~> lookup1",
-						"lookup1 split(isNull(dim@staff_id),",
+						"lookup1 split(isNull(staf_sid),",
 						"     disjoint: false) ~> split1@(new, exist)",
 						"split1@new derive(is_Active = 1) ~> derivedColumn1",
 						"split1@exist derive(is_Active = 1) ~> derivedColumn2",
@@ -698,8 +665,6 @@
 						"     upsertable:false,",
 						"     keys:['staff_sid'],",
 						"     format: 'table',",
-						"     preSQLs:['set IDENTITY_insert scd2_staff on;'],",
-						"     postSQLs:['set IDENTITY_insert scd2_staff off;'],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     errorHandlingOption: 'stopOnFirstError',",
