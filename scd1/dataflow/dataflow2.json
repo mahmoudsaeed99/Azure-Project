@@ -1,0 +1,222 @@
+{
+	"name": "dataflow2",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "staffTable",
+						"type": "DatasetReference"
+					},
+					"name": "staffSource"
+				},
+				{
+					"dataset": {
+						"referenceName": "scd2_staff",
+						"type": "DatasetReference"
+					},
+					"name": "staffDim"
+				},
+				{
+					"dataset": {
+						"referenceName": "scd2_staff",
+						"type": "DatasetReference"
+					},
+					"name": "MaxKey"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "scd2_staff",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "scd2_staff",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
+				},
+				{
+					"dataset": {
+						"referenceName": "scd2_staff",
+						"type": "DatasetReference"
+					},
+					"name": "sink4"
+				}
+			],
+			"transformations": [
+				{
+					"name": "dim"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "alterRow1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          staff_id as integer,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          email as string,",
+				"          phone as string,",
+				"          manager_id as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> staffSource",
+				"source(output(",
+				"          staff_id as integer,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          email as string,",
+				"          phone as string,",
+				"          manager_id as integer,",
+				"          is_Active as integer,",
+				"          staf_sid as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> staffDim",
+				"source(output(",
+				"          maxKey as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'select max(staf_sid) as maxKey\\nfrom [dbo].[scd2_staffs]',",
+				"     format: 'query') ~> MaxKey",
+				"staffDim select(mapColumn(",
+				"          staff_id,",
+				"          first_name,",
+				"          last_name,",
+				"          email,",
+				"          phone,",
+				"          manager_id,",
+				"          is_Active,",
+				"          staf_sid",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> dim",
+				"staffSource, MaxKey join(1 == 1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, dim lookup(staffSource@staff_id == dim@staff_id,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 split(isNull(dim@staff_id),",
+				"     disjoint: false) ~> split1@(new, exist)",
+				"split1@new derive(is_Active = 1) ~> derivedColumn1",
+				"split1@exist derive(is_Active = 1) ~> derivedColumn2",
+				"split1@exist derive(is_Active = 0) ~> derivedColumn3",
+				"derivedColumn3 filter(staf_sid <= maxKey) ~> filter1",
+				"filter1 alterRow(updateIf(staf_sid <= maxKey)) ~> alterRow1",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          staff_id as integer,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          email as string,",
+				"          phone as string,",
+				"          manager_id as integer,",
+				"          is_Active as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          staff_id = split1@exist@staff_id,",
+				"          first_name = split1@exist@first_name,",
+				"          last_name = split1@exist@last_name,",
+				"          email = split1@exist@email,",
+				"          phone = split1@exist@phone,",
+				"          manager_id = split1@exist@manager_id,",
+				"          is_Active",
+				"     )) ~> sink2",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          staff_id as integer,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          email as string,",
+				"          phone as string,",
+				"          manager_id as integer,",
+				"          is_Active as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:[(staf_sid)],",
+				"     format: 'table',",
+				"     preSQLs:['set IDENTITY_insert scd2_staff on;'],",
+				"     postSQLs:['set IDENTITY_insert scd2_staff off;'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          is_Active",
+				"     )) ~> sink3",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          staff_id as integer,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          email as string,",
+				"          phone as string,",
+				"          manager_id as integer,",
+				"          is_Active as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          is_Active",
+				"     )) ~> sink4"
+			]
+		}
+	}
+}

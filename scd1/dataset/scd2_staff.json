@@ -1,0 +1,48 @@
+{
+	"name": "scd2_staff",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DB",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "staff_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "first_name",
+				"type": "varchar"
+			},
+			{
+				"name": "last_name",
+				"type": "varchar"
+			},
+			{
+				"name": "email",
+				"type": "varchar"
+			},
+			{
+				"name": "phone",
+				"type": "varchar"
+			},
+			{
+				"name": "manager_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "is_Active",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "scd2_staffs"
+		}
+	}
+}
