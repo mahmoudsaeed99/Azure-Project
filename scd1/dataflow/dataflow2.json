@@ -118,7 +118,7 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     query: 'select max(staf_sid) as maxKey\\nfrom [dbo].[scd2_staffs]',",
+				"     query: 'select max(staff_sid) as maxKey\\nfrom [dbo].[scd2_staff]',",
 				"     format: 'query') ~> MaxKey",
 				"staffDim select(mapColumn(",
 				"          staff_id,",
