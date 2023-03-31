@@ -42,7 +42,7 @@
 		],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "scd2_staffs"
+			"table": "scd2_staff"
 		}
 	}
 }
