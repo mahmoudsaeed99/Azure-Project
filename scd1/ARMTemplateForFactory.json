@@ -43,7 +43,6 @@
 									"staffSource": {},
 									"staffDim": {},
 									"MaxKey": {},
-									"sink1": {},
 									"sink2": {},
 									"sink3": {},
 									"sink4": {}
@@ -70,17 +69,6 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"dataflow": {
-								"referenceName": "dataflow1",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"customer": {},
-									"customerDim": {},
-									"sink1": {},
-									"sink2": {}
-								}
-							},
 							"staging": {},
 							"compute": {
 								"coreCount": 8,
@@ -97,8 +85,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/dataflow2')]",
-				"[concat(variables('factoryId'), '/dataflows/dataflow1')]"
+				"[concat(variables('factoryId'), '/dataflows/dataflow2')]"
 			]
 		},
 		{
@@ -232,25 +219,11 @@
 				"type": "AzureSqlTable",
 				"schema": [
 					{
-						"name": "staff_sid",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "staff_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
 						"name": "first_name",
 						"type": "varchar"
 					},
 					{
 						"name": "last_name",
-						"type": "varchar"
-					},
-					{
-						"name": "email",
 						"type": "varchar"
 					},
 					{
@@ -266,6 +239,20 @@
 						"name": "is_active",
 						"type": "int",
 						"precision": 10
+					},
+					{
+						"name": "staff_sid",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "staff_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "email",
+						"type": "varchar"
 					}
 				],
 				"typeProperties": {
@@ -535,13 +522,6 @@
 								"referenceName": "scd2_staff",
 								"type": "DatasetReference"
 							},
-							"name": "sink1"
-						},
-						{
-							"dataset": {
-								"referenceName": "scd2_staff",
-								"type": "DatasetReference"
-							},
 							"name": "sink2"
 						},
 						{
@@ -602,14 +582,14 @@
 						"     isolationLevel: 'READ_UNCOMMITTED',",
 						"     format: 'table') ~> staffSource",
 						"source(output(",
-						"          staff_sid as integer,",
-						"          staff_id as integer,",
 						"          first_name as string,",
 						"          last_name as string,",
-						"          email as string,",
 						"          phone as string,",
 						"          manager_id as integer,",
-						"          is_active as integer",
+						"          is_active as integer,",
+						"          staff_sid as integer,",
+						"          staff_id as integer,",
+						"          email as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
@@ -651,46 +631,17 @@
 						"split1@exist derive(is_Active = 0) ~> derivedColumn3",
 						"derivedColumn3 filter(staf_sid <= maxKey) ~> filter1",
 						"filter1 alterRow(updateIf(staf_sid<=maxKey)) ~> alterRow1",
-						"dim sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          staff_sid as integer,",
-						"          staff_id as integer,",
-						"          first_name as string,",
-						"          last_name as string,",
-						"          email as string,",
-						"          phone as string,",
-						"          manager_id as integer,",
-						"          is_active as integer",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          staff_id,",
-						"          first_name,",
-						"          last_name,",
-						"          email,",
-						"          phone,",
-						"          manager_id,",
-						"          is_active = is_Active",
-						"     )) ~> sink1",
 						"alterRow1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
-						"          staff_sid as integer,",
-						"          staff_id as integer,",
 						"          first_name as string,",
 						"          last_name as string,",
-						"          email as string,",
 						"          phone as string,",
 						"          manager_id as integer,",
-						"          is_active as integer",
+						"          is_active as integer,",
+						"          staff_sid as integer,",
+						"          staff_id as integer,",
+						"          email as string",
 						"     ),",
 						"     deletable:false,",
 						"     insertable:false,",
@@ -702,26 +653,26 @@
 						"     skipDuplicateMapOutputs: true,",
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
-						"          staff_sid = staf_sid,",
 						"          staff_id = split1@exist@staff_id,",
 						"          first_name = split1@exist@first_name,",
 						"          last_name = split1@exist@last_name,",
 						"          email = split1@exist@email,",
 						"          phone = split1@exist@phone,",
 						"          manager_id = split1@exist@manager_id,",
-						"          is_active = is_Active",
+						"          is_active = is_Active,",
+						"          staff_sid = staf_sid",
 						"     )) ~> sink2",
 						"derivedColumn1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
-						"          staff_sid as integer,",
-						"          staff_id as integer,",
 						"          first_name as string,",
 						"          last_name as string,",
-						"          email as string,",
 						"          phone as string,",
 						"          manager_id as integer,",
-						"          is_active as integer",
+						"          is_active as integer,",
+						"          staff_sid as integer,",
+						"          staff_id as integer,",
+						"          email as string",
 						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
@@ -732,7 +683,6 @@
 						"     skipDuplicateMapOutputs: true,",
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
-						"          staff_sid = staf_sid,",
 						"          staff_id = split1@new@staff_id,",
 						"          first_name = split1@new@first_name,",
 						"          last_name = split1@new@last_name,",
@@ -744,14 +694,14 @@
 						"derivedColumn2 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
-						"          staff_sid as integer,",
-						"          staff_id as integer,",
 						"          first_name as string,",
 						"          last_name as string,",
-						"          email as string,",
 						"          phone as string,",
 						"          manager_id as integer,",
-						"          is_active as integer",
+						"          is_active as integer,",
+						"          staff_sid as integer,",
+						"          staff_id as integer,",
+						"          email as string",
 						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
@@ -762,14 +712,13 @@
 						"     skipDuplicateMapOutputs: true,",
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
-						"          staff_sid = staf_sid,",
-						"          staff_id = split1@exist@staff_id,",
 						"          first_name = split1@exist@first_name,",
 						"          last_name = split1@exist@last_name,",
 						"          email = split1@exist@email,",
 						"          phone = split1@exist@phone,",
 						"          manager_id = split1@exist@manager_id,",
-						"          is_active = is_Active",
+						"          is_active = is_Active,",
+						"          staff_id = split1@exist@staff_id",
 						"     )) ~> sink4"
 					]
 				}
