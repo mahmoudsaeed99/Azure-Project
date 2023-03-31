@@ -195,8 +195,6 @@
 				"     upsertable:false,",
 				"     keys:['staff_sid'],",
 				"     format: 'table',",
-				"     preSQLs:['set IDENTITY_insert scd2_staff on;'],",
-				"     postSQLs:['set IDENTITY_insert scd2_staff off;'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
