@@ -23,7 +23,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Data flow1",
+						"name": "scd1Flow",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -53,6 +53,41 @@
 							},
 							"traceLevel": "Fine"
 						}
+					},
+					{
+						"name": "scd2Flow",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow2",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"staffSource": {},
+									"staffDim": {},
+									"MaxKey": {},
+									"sink1": {},
+									"sink2": {},
+									"sink3": {},
+									"sink4": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -62,7 +97,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/dataflow1')]"
+				"[concat(variables('factoryId'), '/dataflows/dataflow1')]",
+				"[concat(variables('factoryId'), '/dataflows/dataflow2')]"
 			]
 		},
 		{
@@ -177,6 +213,112 @@
 				"typeProperties": {
 					"schema": "dbo",
 					"table": "customers"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/scd2_staff')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "staff_sid",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "staff_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "first_name",
+						"type": "varchar"
+					},
+					{
+						"name": "last_name",
+						"type": "varchar"
+					},
+					{
+						"name": "email",
+						"type": "varchar"
+					},
+					{
+						"name": "phone",
+						"type": "varchar"
+					},
+					{
+						"name": "manager_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "is_active",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "scd2_staff"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/staffTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "staff_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "first_name",
+						"type": "varchar"
+					},
+					{
+						"name": "last_name",
+						"type": "varchar"
+					},
+					{
+						"name": "email",
+						"type": "varchar"
+					},
+					{
+						"name": "phone",
+						"type": "varchar"
+					},
+					{
+						"name": "manager_id",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "staffs"
 				}
 			},
 			"dependsOn": [
@@ -355,6 +497,288 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/customerTable')]",
 				"[concat(variables('factoryId'), '/datasets/Dim1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow2')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "staffTable",
+								"type": "DatasetReference"
+							},
+							"name": "staffSource"
+						},
+						{
+							"dataset": {
+								"referenceName": "scd2_staff",
+								"type": "DatasetReference"
+							},
+							"name": "staffDim"
+						},
+						{
+							"dataset": {
+								"referenceName": "scd2_staff",
+								"type": "DatasetReference"
+							},
+							"name": "MaxKey"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "scd2_staff",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						},
+						{
+							"dataset": {
+								"referenceName": "scd2_staff",
+								"type": "DatasetReference"
+							},
+							"name": "sink2"
+						},
+						{
+							"dataset": {
+								"referenceName": "scd2_staff",
+								"type": "DatasetReference"
+							},
+							"name": "sink3"
+						},
+						{
+							"dataset": {
+								"referenceName": "scd2_staff",
+								"type": "DatasetReference"
+							},
+							"name": "sink4"
+						}
+					],
+					"transformations": [
+						{
+							"name": "dim"
+						},
+						{
+							"name": "join1"
+						},
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "split1"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "derivedColumn2"
+						},
+						{
+							"name": "derivedColumn3"
+						},
+						{
+							"name": "filter1"
+						},
+						{
+							"name": "alterRow1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          staff_id as integer,",
+						"          first_name as string,",
+						"          last_name as string,",
+						"          email as string,",
+						"          phone as string,",
+						"          manager_id as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> staffSource",
+						"source(output(",
+						"          staff_sid as integer,",
+						"          staff_id as integer,",
+						"          first_name as string,",
+						"          last_name as string,",
+						"          email as string,",
+						"          phone as string,",
+						"          manager_id as integer,",
+						"          is_active as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> staffDim",
+						"source(output(",
+						"          maxKey as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'select max(staf_sid) as maxKey\\nfrom [dbo].[scd2_staffs]',",
+						"     format: 'query') ~> MaxKey",
+						"staffDim select(mapColumn(",
+						"          staff_id,",
+						"          first_name,",
+						"          last_name,",
+						"          email,",
+						"          phone,",
+						"          manager_id,",
+						"          is_Active = is_active,",
+						"          staf_sid = staff_sid",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> dim",
+						"staffSource, MaxKey join(1 == 1,",
+						"     joinType:'cross',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join1",
+						"join1, dim lookup(staffSource@staff_id == dim@staff_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1 split(isNull(dim@staff_id),",
+						"     disjoint: false) ~> split1@(new, exist)",
+						"split1@new derive(is_Active = 1) ~> derivedColumn1",
+						"split1@exist derive(is_Active = 1) ~> derivedColumn2",
+						"split1@exist derive(is_Active = 0) ~> derivedColumn3",
+						"derivedColumn3 filter(staf_sid <= maxKey) ~> filter1",
+						"filter1 alterRow(updateIf(staf_sid<=maxKey)) ~> alterRow1",
+						"dim sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          staff_sid as integer,",
+						"          staff_id as integer,",
+						"          first_name as string,",
+						"          last_name as string,",
+						"          email as string,",
+						"          phone as string,",
+						"          manager_id as integer,",
+						"          is_active as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          staff_id,",
+						"          first_name,",
+						"          last_name,",
+						"          email,",
+						"          phone,",
+						"          manager_id,",
+						"          is_active = is_Active",
+						"     )) ~> sink1",
+						"alterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          staff_sid as integer,",
+						"          staff_id as integer,",
+						"          first_name as string,",
+						"          last_name as string,",
+						"          email as string,",
+						"          phone as string,",
+						"          manager_id as integer,",
+						"          is_active as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['staff_sid'],",
+						"     format: 'table',",
+						"     preSQLs:['set IDENTITY_insert scd2_staff on;'],",
+						"     postSQLs:['set IDENTITY_insert scd2_staff off;'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          staff_sid = staf_sid,",
+						"          staff_id = split1@exist@staff_id,",
+						"          first_name = split1@exist@first_name,",
+						"          last_name = split1@exist@last_name,",
+						"          email = split1@exist@email,",
+						"          phone = split1@exist@phone,",
+						"          manager_id = split1@exist@manager_id,",
+						"          is_active = is_Active",
+						"     )) ~> sink2",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          staff_sid as integer,",
+						"          staff_id as integer,",
+						"          first_name as string,",
+						"          last_name as string,",
+						"          email as string,",
+						"          phone as string,",
+						"          manager_id as integer,",
+						"          is_active as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          staff_sid = staf_sid,",
+						"          staff_id = split1@new@staff_id,",
+						"          first_name = split1@new@first_name,",
+						"          last_name = split1@new@last_name,",
+						"          email = split1@new@email,",
+						"          phone = split1@new@phone,",
+						"          manager_id = split1@new@manager_id,",
+						"          is_active = is_Active",
+						"     )) ~> sink3",
+						"derivedColumn2 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          staff_sid as integer,",
+						"          staff_id as integer,",
+						"          first_name as string,",
+						"          last_name as string,",
+						"          email as string,",
+						"          phone as string,",
+						"          manager_id as integer,",
+						"          is_active as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          staff_sid = staf_sid,",
+						"          staff_id = split1@exist@staff_id,",
+						"          first_name = split1@exist@first_name,",
+						"          last_name = split1@exist@last_name,",
+						"          email = split1@exist@email,",
+						"          phone = split1@exist@phone,",
+						"          manager_id = split1@exist@manager_id,",
+						"          is_active = is_Active",
+						"     )) ~> sink4"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/staffTable')]",
+				"[concat(variables('factoryId'), '/datasets/scd2_staff')]"
 			]
 		}
 	]
