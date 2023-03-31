@@ -229,7 +229,6 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          staff_sid = staf_sid,",
 				"          staff_id = split1@new@staff_id,",
 				"          first_name = split1@new@first_name,",
 				"          last_name = split1@new@last_name,",
