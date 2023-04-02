@@ -17,3 +17,14 @@
 
 
 <img src="scd2.png"/>
+<br>
+<br>
+
+<h1>Slowly Changing Dimension (type 3)  pipeline :</h1>
+<br>
+
+<p> only the latest change and the current new change stored </p>
+<br>
+
+
+<img src="scd3.png"/>
