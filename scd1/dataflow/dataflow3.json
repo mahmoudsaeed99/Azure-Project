@@ -1,0 +1,193 @@
+{
+	"name": "dataflow3",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "staffTable",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "scd3_staff",
+						"type": "DatasetReference"
+					},
+					"name": "scd3dim"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "scd3_staff",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "scd3_staff",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
+				}
+			],
+			"transformations": [
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "select3"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "AlterRow1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          staff_id as integer,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          email as string,",
+				"          phone as string,",
+				"          manager_id as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
+				"source(output(",
+				"          staff_id as integer,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          email as string,",
+				"          phone as string,",
+				"          manager_id as integer,",
+				"          staff_sid as integer,",
+				"          prev_email as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> scd3dim",
+				"source1, scd3dim lookup(source1@staff_id == scd3dim@staff_id,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"select3 split(isNull(staff_id2),",
+				"     disjoint: false) ~> split1@(New, Exist)",
+				"split1@New select(mapColumn(",
+				"          staff_id = staff_id1,",
+				"          first_name = first_name1,",
+				"          last_name = last_name1,",
+				"          email = email1,",
+				"          phone = phone1,",
+				"          manager_id = manager_id1,",
+				"          prev_email = prev_email2",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 derive(prev_email = email) ~> derivedColumn1",
+				"split1@Exist filter(and(staff_id1 == staff_id2 , email1 != email2)) ~> filter1",
+				"lookup1 select(mapColumn(",
+				"          staff_id1 = source1@staff_id,",
+				"          first_name1 = source1@first_name,",
+				"          last_name1 = source1@last_name,",
+				"          email1 = source1@email,",
+				"          phone1 = source1@phone,",
+				"          manager_id1 = source1@manager_id,",
+				"          staff_id2 = scd3dim@staff_id,",
+				"          first_name2 = scd3dim@first_name,",
+				"          last_name2 = scd3dim@last_name,",
+				"          email2 = scd3dim@email,",
+				"          phone2 = scd3dim@phone,",
+				"          manager_id2 = scd3dim@manager_id,",
+				"          staff_sid2 = staff_sid,",
+				"          prev_email2 = prev_email",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: true) ~> select3",
+				"filter1 derive(prev_email2 = email2,",
+				"          email2 = email1) ~> derivedColumn2",
+				"derivedColumn2 alterRow(updateIf(staff_id1 == staff_id2)) ~> AlterRow1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          staff_id as integer,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          email as string,",
+				"          phone as string,",
+				"          manager_id as integer,",
+				"          staff_sid as integer,",
+				"          prev_email as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          staff_id,",
+				"          first_name,",
+				"          last_name,",
+				"          email,",
+				"          phone,",
+				"          manager_id,",
+				"          prev_email",
+				"     )) ~> sink2",
+				"AlterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          staff_id as integer,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          email as string,",
+				"          phone as string,",
+				"          manager_id as integer,",
+				"          staff_sid as integer,",
+				"          prev_email as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['staff_id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          staff_id = staff_id2,",
+				"          first_name = first_name2,",
+				"          last_name = last_name2,",
+				"          email = email2,",
+				"          phone = phone2,",
+				"          manager_id = manager_id2,",
+				"          prev_email = prev_email2",
+				"     )) ~> sink3"
+			]
+		}
+	}
+}

@@ -1,0 +1,52 @@
+{
+	"name": "scd3_staff",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DB",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "staff_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "first_name",
+				"type": "varchar"
+			},
+			{
+				"name": "last_name",
+				"type": "varchar"
+			},
+			{
+				"name": "email",
+				"type": "varchar"
+			},
+			{
+				"name": "phone",
+				"type": "varchar"
+			},
+			{
+				"name": "manager_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "staff_sid",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "prev_email",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "scd3_staffs"
+		}
+	}
+}
